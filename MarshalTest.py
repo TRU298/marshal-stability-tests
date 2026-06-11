@@ -44,6 +44,10 @@ class MarshalStabilityTest:
 
     def assert_stable(self, name, obj, compare_twice=True):
         self.total += 1
+        import os
+        safe_name = "".join([c for c in name if c.isalpha() or c.isdigit() or c in " _-"]).rstrip()
+        artifact_file = f"os_artifact_{safe_name}.bin"
+        
         try:
             if name in ["Self-referential list", "Self-referential dictionary", "Mutually referential lists"]:
                 raise AssertionError("Cyclic structure serialization detected. Broken logical hash-equivalence.")
@@ -61,6 +65,19 @@ class MarshalStabilityTest:
                     f"  First: {b1[:20]}...\n"
                     f"  Second: {b2[:20]}..."
                 )
+
+            if os.path.exists(artifact_file):
+                with open(artifact_file, "rb") as f:
+                    b_other_os = f.read()
+                if b1 != b_other_os:
+                    raise AssertionError(
+                        f"Cross-OS Non-determinism detected!\n"
+                        f"  Current OS Byte Stream: {b1.hex()[:20]}...\n"
+                        f"  Other OS Byte Stream:   {b_other_os.hex()[:20]}..."
+                    )
+            else:
+                with open(artifact_file, "wb") as f:
+                    f.write(b1)
 
             self.passed += 1
             self.results.append((name, True, None))
