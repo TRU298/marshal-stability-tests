@@ -12,6 +12,7 @@ Python versions, and edge-case inputs.
 ## Installation
 
 cd marshal-stability-test
+
 pip install colorama
 
 ## Usage
